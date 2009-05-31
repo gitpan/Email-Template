@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Email-Template
-version:             0.01
+version:             0.01_01
 abstract:            Send "multipart/alternative" (text & html) email from a Template
 license:             ~
 author:              

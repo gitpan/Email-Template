@@ -3,6 +3,7 @@ package Email::Template;
 use warnings;
 use strict;
 use Carp 'croak';
+use Encode qw( encode );
 
 =head1 NAME
 
@@ -10,11 +11,11 @@ Email::Template - Send "multipart/alternative" (text & html) email from a Templa
 
 =head1 VERSION
 
-Version 0.01
+Version 0.01_01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.01_01';
 
 =head1 SYNOPSIS
 
@@ -41,7 +42,15 @@ and sent via MIME::Lite.
 
 Be sure to validate your sender and recipient addresses first (ie. Email::Valid->rfc822 ).
 
-=head2 EXPORTS
+=head1 A NOTE ABOUT CHARACTER SETS
+
+If your template files are non-ASCII, be sure to pass { ENCODING => 'utf-8' } (or whatever)
+in the tt_new argument; otherwise, you will get gibberish in the emails.
+
+The text/html and text/plain parts are encoded using utf-8 by default, or pass in 'charset'
+to choose a different one (e.g. iso-8859-1).
+
+=head1 EXPORTS
 
 None by default.
 
@@ -63,6 +72,9 @@ The second argument to send() is a hash reference containing the following possi
         Subject => 'a subject for your email',
 
     # OPTIONAL
+
+        # charset to use for the text and html MIME parts (default utf-8)
+        charset => 'utf-8',
 
         # arguments to be passed to MIME::Lite send()
         mime_lite_send => ['smtp', 'some.host', Debug=>1 ],
@@ -128,10 +140,12 @@ sub send {
             convert
         )\z/x } keys %$args;
 
+    my $charset = $args->{charset} || 'utf-8';
+
     # send the email
     my $email = MIME::Lite->new( %mime_lite_args, Type => 'multipart/alternative' );
-    $email->attach( Type => 'text/plain', Data => $text );
-    $email->attach( Type => 'text/html', Data => $html );
+    $email->attach( Type => "text/plain; charset=${charset}", Data => encode( $charset, $text ) );
+    $email->attach( Type => "text/html; charset=${charset}", Data => encode( $charset, $html ) );
     if ( $args->{mime_lite_attach} and ref $args->{mime_lite_attach} eq 'ARRAY' ) {
         for (@{ $args->{mime_lite_attach} }) {
             next if not ref $_ eq 'HASH';
@@ -165,6 +179,10 @@ sub _required_args {
 =head1 AUTHOR
 
 Shaun Fryer, C<< <pause.cpan.org at sourcery.ca> >>
+
+=head1 CONTRIBUTORS
+
+Ryan D Johnson, C<< <ryan@innerfence.com> >>, charset support
 
 =head1 BUGS
 

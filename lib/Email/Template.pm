@@ -11,11 +11,11 @@ Email::Template - Send "multipart/alternative" (text & html) email from a Templa
 
 =head1 VERSION
 
-Version 0.01_01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01_01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
